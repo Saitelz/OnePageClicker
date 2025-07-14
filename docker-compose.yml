@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Python Flask бэкенд
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clicker-backend
+    restart: unless-stopped
+    volumes:
+      - backend_data:/app/data
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - clicker-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx фронтенд
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clicker-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - clicker-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Сети
+networks:
+  clicker-network:
+    driver: bridge
+
+# Тома для данных
+volumes:
+  backend_data:
+    driver: local 
