@@ -12,8 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Копируем исходный код приложения
 COPY . .
 
-# Создаём пользователя для безопасности
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser:appuser /app
+# Создаём папку для данных и пользователя для безопасности
+RUN mkdir -p /app/data && \
+    adduser --disabled-password --gecos '' appuser && \
+    chown -R appuser:appuser /app
 USER appuser
 
 # Открываем порт

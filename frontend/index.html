@@ -125,8 +125,8 @@
 <body>
     <div id="app" class="container">
         <div class="server-info">
-            <strong>🖥️ VPS Сервер:</strong> 77.222.42.53<br>
-            <strong>🌐 API:</strong> http://{{ apiHost }}:5000
+            <strong>🖥️ Локальный хост:</strong> {{ apiHost }}<br>
+            <strong>🌐 API:</strong> http://{{ apiHost }}/api/
         </div>
         
         <h1>🎯 Тест Кликера</h1>
@@ -181,7 +181,7 @@
                 async loadCounter() {
                     try {
                         this.loading = true;
-                        const response = await fetch(`http://${this.apiHost}:5000/api/counter`);
+                        const response = await fetch('/api/counter');
                         const data = await response.json();
                         this.count = data.count;
                         this.showStatus('✅ Счётчик загружен', 'success');
@@ -196,7 +196,7 @@
                 async incrementCounter() {
                     try {
                         this.loading = true;
-                        const response = await fetch(`http://${this.apiHost}:5000/api/counter/increment`, {
+                        const response = await fetch('/api/counter/increment', {
                             method: 'POST'
                         });
                         const data = await response.json();
@@ -217,7 +217,7 @@
 
                     try {
                         this.loading = true;
-                        const response = await fetch(`http://${this.apiHost}:5000/api/counter/reset`, {
+                        const response = await fetch('/api/counter/reset', {
                             method: 'POST'
                         });
                         const data = await response.json();
