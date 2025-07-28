@@ -234,7 +234,8 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 9999;
+            /* Увеличиваем z-index */
             left: 0;
             top: 0;
             width: 100%;
@@ -243,9 +244,16 @@
         }
 
         .modal.show {
-            display: flex;
+            display: flex !important;
+            /* Добавляем !important */
             align-items: center;
             justify-content: center;
+        }
+
+        /* Отладочные стили */
+        .modal.show {
+            border: 3px solid red;
+            /* Временная красная рамка для отладки */
         }
 
         .modal-content {
@@ -319,355 +327,386 @@
 </head>
 
 <body>
-    <div id="app" class="container">
-        <h1>Кликер</h1>
+    <div id="app">
+        <div class="container">
+            <h1>Кликер</h1>
 
-        <div class="counter-display">
-            {{ count }}
-        </div>
-
-        <div>
-            <button class="click-button" @click="incrementCounter" :disabled="loading" :class="{ loading: loading }">
-                {{ loading ? '⏳ Загрузка...' : '🚀 КЛИК!' }}
-            </button>
-        </div>
-
-        <div>
-            <button class="reset-button" @click="resetCounter" :disabled="loading" :class="{ loading: loading }">
-                🔄 Сбросить
-            </button>
-        </div>
-
-        <div v-if="status" :class="['status', status.type]">
-            {{ status.message }}
-        </div>
-
-        <!-- Секция документов -->
-        <div class="documents-section">
-            <h2>📄 Просмотр документов Office</h2>
-
-            <!-- Область загрузки -->
-            <div class="upload-area" :class="{ dragover: isDragOver }" @dragover.prevent="isDragOver = true"
-                @dragleave.prevent="isDragOver = false" @drop.prevent="handleFileDrop">
-                <div>
-                    <p>📁 Перетащите файл сюда или нажмите кнопку</p>
-                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-                        Поддерживаемые форматы: DOC, DOCX, PPT, PPTX, XLS, XLSX, PDF
-                    </p>
-                    <input type="file" ref="fileInput" class="file-input" @change="handleFileSelect"
-                        accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx,.pdf">
-                    <button class="upload-button" @click="$refs.fileInput.click()" :disabled="uploading">
-                        {{ uploading ? '⏳ Загрузка...' : '📤 Выбрать файл' }}
-                    </button>
-                </div>
-
-                <div v-if="uploadProgress" class="upload-progress">
-                    {{ uploadProgress }}
-                </div>
+            <div class="counter-display">
+                {{ count }}
             </div>
 
-            <!-- Список документов -->
-            <div class="documents-list">
-                <h3>📋 Загруженные документы</h3>
-
-                <!-- Кнопка для тестирования модального окна -->
-                <button class="upload-button" @click="testModal"
-                    style="margin: 10px; font-size: 0.9em; padding: 10px 20px;">
-                    🧪 Тест модального окна
+            <div>
+                <button class="click-button" @click="incrementCounter" :disabled="loading"
+                    :class="{ loading: loading }">
+                    {{ loading ? '⏳ Загрузка...' : '🚀 КЛИК!' }}
                 </button>
+            </div>
 
-                <div v-if="documents.length === 0" class="empty-state">
-                    Документы не загружены
+            <div>
+                <button class="reset-button" @click="resetCounter" :disabled="loading" :class="{ loading: loading }">
+                    🔄 Сбросить
+                </button>
+            </div>
+
+            <div v-if="status" :class="['status', status.type]">
+                {{ status.message }}
+            </div>
+
+            <!-- Секция документов -->
+            <div class="documents-section">
+                <h2>📄 Просмотр документов Office</h2>
+
+                <!-- Область загрузки -->
+                <div class="upload-area" :class="{ dragover: isDragOver }" @dragover.prevent="isDragOver = true"
+                    @dragleave.prevent="isDragOver = false" @drop.prevent="handleFileDrop">
+                    <div>
+                        <p>📁 Перетащите файл сюда или нажмите кнопку</p>
+                        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                            Поддерживаемые форматы: DOC, DOCX, PPT, PPTX, XLS, XLSX, PDF
+                        </p>
+                        <input type="file" ref="fileInput" class="file-input" @change="handleFileSelect"
+                            accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx,.pdf">
+                        <button class="upload-button" @click="$refs.fileInput.click()" :disabled="uploading">
+                            {{ uploading ? '⏳ Загрузка...' : '📤 Выбрать файл' }}
+                        </button>
+                    </div>
+
+                    <div v-if="uploadProgress" class="upload-progress">
+                        {{ uploadProgress }}
+                    </div>
                 </div>
 
-                <div v-for="document in documents" :key="document.id" class="document-item">
-                    <div class="document-info">
-                        <div class="document-name">{{ document.original_name }}</div>
-                        <div class="document-meta">
-                            Загружен: {{ formatDate(document.upload_date) }} |
-                            Размер: {{ formatFileSize(document.size) }}
+                <!-- Список документов -->
+                <div class="documents-list">
+                    <h3>📋 Загруженные документы</h3>
+
+                    <!-- Кнопка для тестирования модального окна -->
+                    <button class="upload-button" @click="testModal"
+                        style="margin: 5px; font-size: 0.9em; padding: 10px 20px;">
+                        🧪 Тест модального окна
+                    </button>
+                    <button class="upload-button" @click="forceShowModal"
+                        style="margin: 5px; font-size: 0.9em; padding: 10px 20px; background: #dc3545;">
+                        🔧 Принудительно показать
+                    </button>
+
+                    <div v-if="documents.length === 0" class="empty-state">
+                        Документы не загружены
+                    </div>
+
+                    <div v-for="document in documents" :key="document.id" class="document-item">
+                        <div class="document-info">
+                            <div class="document-name">{{ document.original_name }}</div>
+                            <div class="document-meta">
+                                Загружен: {{ formatDate(document.upload_date) }} |
+                                Размер: {{ formatFileSize(document.size) }}
+                            </div>
+                        </div>
+                        <div class="document-actions">
+                            <button class="view-button" @click="viewDocument(document)">
+                                👁️ Просмотр
+                            </button>
+                            <button class="delete-button" @click="deleteDocument(document)">
+                                🗑️ Удалить
+                            </button>
                         </div>
                     </div>
-                    <div class="document-actions">
-                        <button class="view-button" @click="viewDocument(document)">
-                            👁️ Просмотр
-                        </button>
-                        <button class="delete-button" @click="deleteDocument(document)">
-                            🗑️ Удалить
-                        </button>
+                </div>
+            </div>
+        </div> <!-- Закрываем container -->
+
+        <!-- Модальное окно для просмотра документов -->
+        <div class="modal" :class="{ show: showModal }" @click="closeModal">
+            <div class="modal-content" @click.stop>
+                <div class="modal-header">
+                    <div class="modal-title">
+                        📄 {{ currentDocument ? currentDocument.original_name : 'Просмотр документа' }}
+                    </div>
+                    <button class="close-button" @click="closeModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <iframe v-if="documentViewUrl" :src="documentViewUrl" class="document-viewer"
+                        frameborder="0"></iframe>
+                    <div v-else style="padding: 50px; text-align: center; color: #666;">
+                        ⏳ Загрузка документа...
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </div> <!-- Закрываем Vue приложение -->
 
-    <!-- Модальное окно для просмотра документов -->
-    <div class="modal" :class="{ show: showModal }" @click="closeModal">
-        <div class="modal-content" @click.stop>
-            <div class="modal-header">
-                <div class="modal-title">
-                    📄 {{ currentDocument ? currentDocument.original_name : 'Просмотр документа' }}
-                </div>
-                <button class="close-button" @click="closeModal">✕</button>
-            </div>
-            <div class="modal-body">
-                <iframe v-if="documentViewUrl" :src="documentViewUrl" class="document-viewer" frameborder="0"></iframe>
-                <div v-else style="padding: 50px; text-align: center; color: #666;">
-                    ⏳ Загрузка документа...
-                </div>
-            </div>
-        </div>
-    </div>
+        <script>
+            const { createApp } = Vue;
 
-    <script>
-        const { createApp } = Vue;
-
-        createApp({
-            data() {
-                return {
-                    count: 0,
-                    loading: false,
-                    status: null,
-                    // Документы
-                    documents: [],
-                    uploading: false,
-                    uploadProgress: '',
-                    isDragOver: false,
-                    showModal: false,
-                    currentDocument: null,
-                    documentViewUrl: ''
-                }
-            },
-            mounted() {
-                this.loadCounter();
-                this.loadDocuments();
-            },
-            methods: {
-                async loadCounter() {
-                    try {
-                        this.loading = true;
-                        const response = await fetch('/api/counter');
-                        const data = await response.json();
-                        this.count = data.count;
-                        this.showStatus('✅ Счётчик загружен', 'success');
-                    } catch (error) {
-                        console.error('Ошибка загрузки счётчика:', error);
-                        this.showStatus('❌ Ошибка подключения к серверу', 'error');
-                    } finally {
-                        this.loading = false;
+            createApp({
+                data() {
+                    return {
+                        count: 0,
+                        loading: false,
+                        status: null,
+                        // Документы
+                        documents: [],
+                        uploading: false,
+                        uploadProgress: '',
+                        isDragOver: false,
+                        showModal: false,
+                        currentDocument: null,
+                        documentViewUrl: ''
                     }
                 },
-
-                async incrementCounter() {
-                    try {
-                        this.loading = true;
-                        const response = await fetch('/api/counter/increment', {
-                            method: 'POST'
-                        });
-                        const data = await response.json();
-                        this.count = data.count;
-                        // Убрал сообщение "🎉 Клик засчитан!"
-                    } catch (error) {
-                        console.error('Ошибка клика:', error);
-                        this.showStatus('❌ Ошибка при клике', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
+                mounted() {
+                    this.loadCounter();
+                    this.loadDocuments();
                 },
-
-                async resetCounter() {
-                    if (!confirm('Вы уверены, что хотите сбросить счётчик?')) {
-                        return;
-                    }
-
-                    try {
-                        this.loading = true;
-                        const response = await fetch('/api/counter/reset', {
-                            method: 'POST'
-                        });
-                        const data = await response.json();
-                        this.count = data.count;
-                        this.showStatus('🔄 Счётчик сброшен', 'success');
-                    } catch (error) {
-                        console.error('Ошибка сброса:', error);
-                        this.showStatus('❌ Ошибка при сбросе', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                showStatus(message, type) {
-                    this.status = { message, type };
-                    setTimeout(() => {
-                        this.status = null;
-                    }, 3000);
-                },
-
-                // Методы для работы с документами
-                async loadDocuments() {
-                    try {
-                        console.log('Загружаем список документов...');
-                        const response = await fetch('/api/documents');
-                        const data = await response.json();
-                        console.log('Получен список документов:', data);
-                        this.documents = data.documents;
-                        console.log('Документы в состоянии:', this.documents);
-                    } catch (error) {
-                        console.error('Ошибка загрузки документов:', error);
-                        this.showStatus('❌ Ошибка загрузки документов', 'error');
-                    }
-                },
-
-                handleFileDrop(event) {
-                    this.isDragOver = false;
-                    const files = event.dataTransfer.files;
-                    if (files.length > 0) {
-                        this.uploadFile(files[0]);
-                    }
-                },
-
-                handleFileSelect(event) {
-                    const files = event.target.files;
-                    if (files.length > 0) {
-                        this.uploadFile(files[0]);
-                    }
-                },
-
-                async uploadFile(file) {
-                    if (!file) return;
-
-                    // Проверка типа файла
-                    const allowedTypes = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'pdf'];
-                    const fileExtension = file.name.split('.').pop().toLowerCase();
-
-                    if (!allowedTypes.includes(fileExtension)) {
-                        this.showStatus('❌ Неподдерживаемый тип файла', 'error');
-                        return;
-                    }
-
-                    // Проверка размера файла (16MB)
-                    if (file.size > 16 * 1024 * 1024) {
-                        this.showStatus('❌ Файл слишком большой (максимум 16MB)', 'error');
-                        return;
-                    }
-
-                    try {
-                        this.uploading = true;
-                        this.uploadProgress = 'Загрузка файла...';
-
-                        const formData = new FormData();
-                        formData.append('file', file);
-
-                        const response = await fetch('/api/documents/upload', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            this.showStatus('✅ Файл успешно загружен', 'success');
-                            this.loadDocuments(); // Обновляем список документов
-                            this.$refs.fileInput.value = ''; // Очищаем input
-                        } else {
-                            this.showStatus(`❌ ${data.error}`, 'error');
+                methods: {
+                    async loadCounter() {
+                        try {
+                            this.loading = true;
+                            const response = await fetch('/api/counter');
+                            const data = await response.json();
+                            this.count = data.count;
+                            this.showStatus('✅ Счётчик загружен', 'success');
+                        } catch (error) {
+                            console.error('Ошибка загрузки счётчика:', error);
+                            this.showStatus('❌ Ошибка подключения к серверу', 'error');
+                        } finally {
+                            this.loading = false;
                         }
-                    } catch (error) {
-                        console.error('Ошибка загрузки файла:', error);
-                        this.showStatus('❌ Ошибка при загрузке файла', 'error');
-                    } finally {
-                        this.uploading = false;
-                        this.uploadProgress = '';
-                    }
-                },
+                    },
 
-                async viewDocument(document) {
-                    console.log('viewDocument вызван с документом:', document);
+                    async incrementCounter() {
+                        try {
+                            this.loading = true;
+                            const response = await fetch('/api/counter/increment', {
+                                method: 'POST'
+                            });
+                            const data = await response.json();
+                            this.count = data.count;
+                            // Убрал сообщение "🎉 Клик засчитан!"
+                        } catch (error) {
+                            console.error('Ошибка клика:', error);
+                            this.showStatus('❌ Ошибка при клике', 'error');
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
 
-                    try {
-                        this.currentDocument = document;
-                        this.showModal = true;
-                        this.documentViewUrl = '';
+                    async resetCounter() {
+                        if (!confirm('Вы уверены, что хотите сбросить счётчик?')) {
+                            return;
+                        }
 
-                        console.log('Модальное окно должно открыться, showModal:', this.showModal);
+                        try {
+                            this.loading = true;
+                            const response = await fetch('/api/counter/reset', {
+                                method: 'POST'
+                            });
+                            const data = await response.json();
+                            this.count = data.count;
+                            this.showStatus('🔄 Счётчик сброшен', 'success');
+                        } catch (error) {
+                            console.error('Ошибка сброса:', error);
+                            this.showStatus('❌ Ошибка при сбросе', 'error');
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
 
-                        const url = `/api/documents/${document.id}/view`;
-                        console.log('Запрос к API:', url);
+                    showStatus(message, type) {
+                        this.status = { message, type };
+                        setTimeout(() => {
+                            this.status = null;
+                        }, 3000);
+                    },
 
-                        const response = await fetch(url);
-                        const data = await response.json();
+                    // Методы для работы с документами
+                    async loadDocuments() {
+                        try {
+                            console.log('Загружаем список документов...');
+                            const response = await fetch('/api/documents');
+                            const data = await response.json();
+                            console.log('Получен список документов:', data);
+                            this.documents = data.documents;
+                            console.log('Документы в состоянии:', this.documents);
+                        } catch (error) {
+                            console.error('Ошибка загрузки документов:', error);
+                            this.showStatus('❌ Ошибка загрузки документов', 'error');
+                        }
+                    },
 
-                        console.log('Ответ API:', response.status, data);
+                    handleFileDrop(event) {
+                        this.isDragOver = false;
+                        const files = event.dataTransfer.files;
+                        if (files.length > 0) {
+                            this.uploadFile(files[0]);
+                        }
+                    },
 
-                        if (response.ok) {
-                            this.documentViewUrl = data.view_url;
-                            console.log('URL для просмотра:', data.view_url);
-                        } else {
-                            console.error('Ошибка API:', data.error);
-                            this.showStatus(`❌ ${data.error}`, 'error');
+                    handleFileSelect(event) {
+                        const files = event.target.files;
+                        if (files.length > 0) {
+                            this.uploadFile(files[0]);
+                        }
+                    },
+
+                    async uploadFile(file) {
+                        if (!file) return;
+
+                        // Проверка типа файла
+                        const allowedTypes = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'pdf'];
+                        const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                        if (!allowedTypes.includes(fileExtension)) {
+                            this.showStatus('❌ Неподдерживаемый тип файла', 'error');
+                            return;
+                        }
+
+                        // Проверка размера файла (16MB)
+                        if (file.size > 16 * 1024 * 1024) {
+                            this.showStatus('❌ Файл слишком большой (максимум 16MB)', 'error');
+                            return;
+                        }
+
+                        try {
+                            this.uploading = true;
+                            this.uploadProgress = 'Загрузка файла...';
+
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            const response = await fetch('/api/documents/upload', {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                this.showStatus('✅ Файл успешно загружен', 'success');
+                                this.loadDocuments(); // Обновляем список документов
+                                this.$refs.fileInput.value = ''; // Очищаем input
+                            } else {
+                                this.showStatus(`❌ ${data.error}`, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Ошибка загрузки файла:', error);
+                            this.showStatus('❌ Ошибка при загрузке файла', 'error');
+                        } finally {
+                            this.uploading = false;
+                            this.uploadProgress = '';
+                        }
+                    },
+
+                    async viewDocument(document) {
+                        console.log('viewDocument вызван с документом:', document);
+
+                        try {
+                            this.currentDocument = document;
+                            this.showModal = true;
+                            this.documentViewUrl = '';
+
+                            console.log('Модальное окно должно открыться, showModal:', this.showModal);
+
+                            const url = `/api/documents/${document.id}/view`;
+                            console.log('Запрос к API:', url);
+
+                            const response = await fetch(url);
+                            const data = await response.json();
+
+                            console.log('Ответ API:', response.status, data);
+
+                            if (response.ok) {
+                                this.documentViewUrl = data.view_url;
+                                console.log('URL для просмотра:', data.view_url);
+                            } else {
+                                console.error('Ошибка API:', data.error);
+                                this.showStatus(`❌ ${data.error}`, 'error');
+                                this.closeModal();
+                            }
+                        } catch (error) {
+                            console.error('Ошибка просмотра документа:', error);
+                            this.showStatus('❌ Ошибка при открытии документа', 'error');
                             this.closeModal();
                         }
-                    } catch (error) {
-                        console.error('Ошибка просмотра документа:', error);
-                        this.showStatus('❌ Ошибка при открытии документа', 'error');
-                        this.closeModal();
-                    }
-                },
+                    },
 
-                async deleteDocument(document) {
-                    if (!confirm(`Вы уверены, что хотите удалить документ "${document.original_name}"?`)) {
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(`/api/documents/${document.id}`, {
-                            method: 'DELETE'
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            this.showStatus('✅ Документ удален', 'success');
-                            this.loadDocuments(); // Обновляем список документов
-                        } else {
-                            this.showStatus(`❌ ${data.error}`, 'error');
+                    async deleteDocument(document) {
+                        if (!confirm(`Вы уверены, что хотите удалить документ "${document.original_name}"?`)) {
+                            return;
                         }
-                    } catch (error) {
-                        console.error('Ошибка удаления документа:', error);
-                        this.showStatus('❌ Ошибка при удалении документа', 'error');
+
+                        try {
+                            const response = await fetch(`/api/documents/${document.id}`, {
+                                method: 'DELETE'
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                this.showStatus('✅ Документ удален', 'success');
+                                this.loadDocuments(); // Обновляем список документов
+                            } else {
+                                this.showStatus(`❌ ${data.error}`, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Ошибка удаления документа:', error);
+                            this.showStatus('❌ Ошибка при удалении документа', 'error');
+                        }
+                    },
+
+                    closeModal() {
+                        console.log('Закрываем модальное окно');
+                        this.showModal = false;
+                        this.currentDocument = null;
+                        this.documentViewUrl = '';
+                    },
+
+                    testModal() {
+                        console.log('Тестируем модальное окно');
+                        this.currentDocument = { original_name: 'Тестовый документ' };
+                        this.showModal = true;
+                        this.documentViewUrl = 'https://docs.google.com/gview?url=https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf&embedded=true';
+                        console.log('showModal установлен в:', this.showModal);
+
+                        // Принудительно показываем модальное окно через DOM
+                        this.$nextTick(() => {
+                            const modal = document.querySelector('.modal');
+                            console.log('Модальный элемент найден:', modal);
+                            console.log('Классы модального окна:', modal ? modal.className : 'не найден');
+                            if (modal) {
+                                modal.style.display = 'flex';
+                                console.log('Принудительно установили display: flex');
+                            }
+                        });
+                    },
+
+                    forceShowModal() {
+                        console.log('Принудительный показ модального окна');
+                        const modal = document.querySelector('.modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            modal.style.zIndex = '99999';
+                            modal.classList.add('show');
+                            console.log('Модальное окно принудительно показано');
+                        } else {
+                            console.error('Модальное окно не найдено в DOM');
+                        }
+                    },
+
+                    formatDate(dateString) {
+                        const date = new Date(dateString);
+                        return date.toLocaleString('ru-RU');
+                    },
+
+                    formatFileSize(bytes) {
+                        if (bytes === 0) return '0 Bytes';
+                        const k = 1024;
+                        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                        const i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                     }
-                },
-
-                closeModal() {
-                    console.log('Закрываем модальное окно');
-                    this.showModal = false;
-                    this.currentDocument = null;
-                    this.documentViewUrl = '';
-                },
-
-                testModal() {
-                    console.log('Тестируем модальное окно');
-                    this.currentDocument = { original_name: 'Тестовый документ' };
-                    this.showModal = true;
-                    this.documentViewUrl = 'https://docs.google.com/gview?url=https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf&embedded=true';
-                    console.log('showModal установлен в:', this.showModal);
-                },
-
-                formatDate(dateString) {
-                    const date = new Date(dateString);
-                    return date.toLocaleString('ru-RU');
-                },
-
-                formatFileSize(bytes) {
-                    if (bytes === 0) return '0 Bytes';
-                    const k = 1024;
-                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                    const i = Math.floor(Math.log(bytes) / Math.log(k));
-                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                 }
-            }
-        }).mount('#app');
-    </script>
+            }).mount('#app');
+        </script>
 </body>
 
 </html>
