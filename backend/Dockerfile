@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Копируем исходный код приложения
 COPY . .
 
-# Создаём папку для данных и пользователя для безопасности
-RUN mkdir -p /app/data && \
+# Создаём папки для данных и загрузок, пользователя для безопасности
+RUN mkdir -p /app/data /app/data/uploads && \
     adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
 USER appuser

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо - Кликер с просмотром документов</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .counter-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 30px 0;
+            font-size: 3em;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .click-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(238, 90, 36, 0.4);
+        }
+
+        .click-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(238, 90, 36, 0.6);
+        }
+
+        .reset-button {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(116, 185, 255, 0.4);
+        }
+
+        .reset-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(116, 185, 255, 0.6);
+        }
+
+        .documents-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, #10ac84 0%, #00d2d3 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(16, 172, 132, 0.4);
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 172, 132, 0.6);
+        }
+
+        .document-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .document-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .document-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .document-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .delete-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .delete-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(238, 90, 36, 0.4);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .demo-note {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="demo-note">
+            <strong>🎯 Демо интерфейса</strong><br>
+            Это демонстрация интерфейса. Для полной функциональности запустите сервер.
+        </div>
+
+        <h1>Кликер</h1>
+        
+        <div class="counter-display">
+            {{ count }}
+        </div>
+        
+        <div>
+            <button class="click-button" @click="incrementCounter">
+                🚀 КЛИК!
+            </button>
+        </div>
+        
+        <div>
+            <button class="reset-button" @click="resetCounter">
+                🔄 Сбросить
+            </button>
+        </div>
+        
+        <div v-if="status" :class="['status', status.type]">
+            {{ status.message }}
+        </div>
+
+        <!-- Секция документов -->
+        <div class="documents-section">
+            <h2>📄 Просмотр документов Office</h2>
+            
+            <!-- Область загрузки -->
+            <div class="upload-area">
+                <div>
+                    <p>📁 Перетащите файл сюда или нажмите кнопку</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        Поддерживаемые форматы: DOC, DOCX, PPT, PPTX, XLS, XLSX, PDF
+                    </p>
+                    <button class="upload-button" @click="demoUpload">
+                        📤 Выбрать файл
+                    </button>
+                </div>
+            </div>
+
+            <!-- Список документов -->
+            <div class="documents-list">
+                <h3>📋 Загруженные документы</h3>
+                
+                <div class="document-item">
+                    <div class="document-info">
+                        <div class="document-name">Презентация_проекта.pptx</div>
+                        <div class="document-meta">
+                            Загружен: 28.07.2025, 14:30 | Размер: 2.5 MB
+                        </div>
+                    </div>
+                    <div class="document-actions">
+                        <button class="view-button" @click="demoView">
+                            👁️ Просмотр
+                        </button>
+                        <button class="delete-button" @click="demoDelete">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                </div>
+
+                <div class="document-item">
+                    <div class="document-info">
+                        <div class="document-name">Отчет_Q4.docx</div>
+                        <div class="document-meta">
+                            Загружен: 28.07.2025, 13:15 | Размер: 1.8 MB
+                        </div>
+                    </div>
+                    <div class="document-actions">
+                        <button class="view-button" @click="demoView">
+                            👁️ Просмотр
+                        </button>
+                        <button class="delete-button" @click="demoDelete">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    count: 42,
+                    status: null
+                }
+            },
+            methods: {
+                incrementCounter() {
+                    this.count++;
+                    this.showStatus('🎉 Клик засчитан! (демо)', 'success');
+                },
+
+                resetCounter() {
+                    if (confirm('Вы уверены, что хотите сбросить счётчик?')) {
+                        this.count = 0;
+                        this.showStatus('🔄 Счётчик сброшен (демо)', 'success');
+                    }
+                },
+
+                demoUpload() {
+                    this.showStatus('📤 В демо режиме загрузка недоступна', 'error');
+                },
+
+                demoView() {
+                    this.showStatus('👁️ В демо режиме просмотр недоступен', 'error');
+                },
+
+                demoDelete() {
+                    this.showStatus('🗑️ В демо режиме удаление недоступно', 'error');
+                },
+
+                showStatus(message, type) {
+                    this.status = { message, type };
+                    setTimeout(() => {
+                        this.status = null;
+                    }, 3000);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -111,6 +111,209 @@
             opacity: 0.6;
             pointer-events: none;
         }
+
+        /* Стили для документов */
+        .documents-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, #10ac84 0%, #00d2d3 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(16, 172, 132, 0.4);
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 172, 132, 0.6);
+        }
+
+        .documents-list {
+            margin-top: 30px;
+        }
+
+        .document-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .document-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .document-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .document-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .delete-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .delete-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(238, 90, 36, 0.4);
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px;
+            max-height: 800px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 15px 15px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modal-body {
+            padding: 0;
+            height: calc(100% - 80px);
+        }
+
+        .document-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .upload-progress {
+            margin-top: 10px;
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 30px;
+        }
     </style>
 </head>
 <body>
@@ -146,6 +349,105 @@
         <div v-if="status" :class="['status', status.type]">
             {{ status.message }}
         </div>
+
+        <!-- Секция документов -->
+        <div class="documents-section">
+            <h2>📄 Просмотр документов Office</h2>
+            
+            <!-- Область загрузки -->
+            <div 
+                class="upload-area"
+                :class="{ dragover: isDragOver }"
+                @dragover.prevent="isDragOver = true"
+                @dragleave.prevent="isDragOver = false"
+                @drop.prevent="handleFileDrop"
+            >
+                <div>
+                    <p>📁 Перетащите файл сюда или нажмите кнопку</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        Поддерживаемые форматы: DOC, DOCX, PPT, PPTX, XLS, XLSX, PDF
+                    </p>
+                    <input 
+                        type="file" 
+                        ref="fileInput"
+                        class="file-input"
+                        @change="handleFileSelect"
+                        accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx,.pdf"
+                    >
+                    <button 
+                        class="upload-button"
+                        @click="$refs.fileInput.click()"
+                        :disabled="uploading"
+                    >
+                        {{ uploading ? '⏳ Загрузка...' : '📤 Выбрать файл' }}
+                    </button>
+                </div>
+                
+                <div v-if="uploadProgress" class="upload-progress">
+                    {{ uploadProgress }}
+                </div>
+            </div>
+
+            <!-- Список документов -->
+            <div class="documents-list">
+                <h3>📋 Загруженные документы</h3>
+                
+                <div v-if="documents.length === 0" class="empty-state">
+                    Документы не загружены
+                </div>
+                
+                <div 
+                    v-for="document in documents" 
+                    :key="document.id"
+                    class="document-item"
+                >
+                    <div class="document-info">
+                        <div class="document-name">{{ document.original_name }}</div>
+                        <div class="document-meta">
+                            Загружен: {{ formatDate(document.upload_date) }} | 
+                            Размер: {{ formatFileSize(document.size) }}
+                        </div>
+                    </div>
+                    <div class="document-actions">
+                        <button 
+                            class="view-button"
+                            @click="viewDocument(document)"
+                        >
+                            👁️ Просмотр
+                        </button>
+                        <button 
+                            class="delete-button"
+                            @click="deleteDocument(document)"
+                        >
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра документов -->
+    <div class="modal" :class="{ show: showModal }" @click="closeModal">
+        <div class="modal-content" @click.stop>
+            <div class="modal-header">
+                <div class="modal-title">
+                    📄 {{ currentDocument ? currentDocument.original_name : 'Просмотр документа' }}
+                </div>
+                <button class="close-button" @click="closeModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <iframe 
+                    v-if="documentViewUrl"
+                    :src="documentViewUrl"
+                    class="document-viewer"
+                    frameborder="0"
+                ></iframe>
+                <div v-else style="padding: 50px; text-align: center; color: #666;">
+                    ⏳ Загрузка документа...
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -156,11 +458,20 @@
                 return {
                     count: 0,
                     loading: false,
-                    status: null
+                    status: null,
+                    // Документы
+                    documents: [],
+                    uploading: false,
+                    uploadProgress: '',
+                    isDragOver: false,
+                    showModal: false,
+                    currentDocument: null,
+                    documentViewUrl: ''
                 }
             },
             mounted() {
                 this.loadCounter();
+                this.loadDocuments();
             },
             methods: {
                 async loadCounter() {
@@ -221,6 +532,146 @@
                     setTimeout(() => {
                         this.status = null;
                     }, 3000);
+                },
+
+                // Методы для работы с документами
+                async loadDocuments() {
+                    try {
+                        const response = await fetch('/api/documents');
+                        const data = await response.json();
+                        this.documents = data.documents;
+                    } catch (error) {
+                        console.error('Ошибка загрузки документов:', error);
+                        this.showStatus('❌ Ошибка загрузки документов', 'error');
+                    }
+                },
+
+                handleFileDrop(event) {
+                    this.isDragOver = false;
+                    const files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.uploadFile(files[0]);
+                    }
+                },
+
+                handleFileSelect(event) {
+                    const files = event.target.files;
+                    if (files.length > 0) {
+                        this.uploadFile(files[0]);
+                    }
+                },
+
+                async uploadFile(file) {
+                    if (!file) return;
+
+                    // Проверка типа файла
+                    const allowedTypes = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'pdf'];
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    
+                    if (!allowedTypes.includes(fileExtension)) {
+                        this.showStatus('❌ Неподдерживаемый тип файла', 'error');
+                        return;
+                    }
+
+                    // Проверка размера файла (16MB)
+                    if (file.size > 16 * 1024 * 1024) {
+                        this.showStatus('❌ Файл слишком большой (максимум 16MB)', 'error');
+                        return;
+                    }
+
+                    try {
+                        this.uploading = true;
+                        this.uploadProgress = 'Загрузка файла...';
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        const response = await fetch('/api/documents/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.showStatus('✅ Файл успешно загружен', 'success');
+                            this.loadDocuments(); // Обновляем список документов
+                            this.$refs.fileInput.value = ''; // Очищаем input
+                        } else {
+                            this.showStatus(`❌ ${data.error}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки файла:', error);
+                        this.showStatus('❌ Ошибка при загрузке файла', 'error');
+                    } finally {
+                        this.uploading = false;
+                        this.uploadProgress = '';
+                    }
+                },
+
+                async viewDocument(document) {
+                    try {
+                        this.currentDocument = document;
+                        this.showModal = true;
+                        this.documentViewUrl = '';
+
+                        const response = await fetch(`/api/documents/${document.id}/view`);
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.documentViewUrl = data.view_url;
+                        } else {
+                            this.showStatus(`❌ ${data.error}`, 'error');
+                            this.closeModal();
+                        }
+                    } catch (error) {
+                        console.error('Ошибка просмотра документа:', error);
+                        this.showStatus('❌ Ошибка при открытии документа', 'error');
+                        this.closeModal();
+                    }
+                },
+
+                async deleteDocument(document) {
+                    if (!confirm(`Вы уверены, что хотите удалить документ "${document.original_name}"?`)) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/documents/${document.id}`, {
+                            method: 'DELETE'
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.showStatus('✅ Документ удален', 'success');
+                            this.loadDocuments(); // Обновляем список документов
+                        } else {
+                            this.showStatus(`❌ ${data.error}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка удаления документа:', error);
+                        this.showStatus('❌ Ошибка при удалении документа', 'error');
+                    }
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                    this.currentDocument = null;
+                    this.documentViewUrl = '';
+                },
+
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleString('ru-RU');
+                },
+
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                 }
             }
         }).mount('#app');
