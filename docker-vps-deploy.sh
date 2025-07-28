@@ -84,6 +84,8 @@ if command -v ufw &> /dev/null; then
     ufw allow 22/tcp
     ufw allow 80/tcp
     ufw allow 443/tcp
+    ufw allow 8080/tcp  # Новый порт для фронтенда
+    ufw allow 8443/tcp  # Новый порт для HTTPS
     ufw --force enable
 fi
 
@@ -137,13 +139,13 @@ echo "🔍 Проверяем работоспособность..."
 # Получаем IP сервера
 SERVER_IP=$(curl -s http://checkip.amazonaws.com/ || curl -s http://ipinfo.io/ip)
 
-if curl -f http://localhost/api/counter &>/dev/null; then
+if curl -f http://localhost:8080/api/counter &>/dev/null; then
     echo "✅ API работает"
 else
     echo "❌ API недоступен"
 fi
 
-if curl -f http://localhost/ &>/dev/null; then
+if curl -f http://localhost:8080/ &>/dev/null; then
     echo "✅ Фронтенд работает"
 else
     echo "❌ Фронтенд недоступен"
@@ -154,9 +156,9 @@ echo "🎉 Развёртывание завершено!"
 echo ""
 echo "📍 Ваш кликер доступен по адресу:"
 if [ ! -z "$SERVER_IP" ]; then
-    echo "   🌐 http://$SERVER_IP"
+    echo "   🌐 http://$SERVER_IP:8080"
 fi
-echo "   🌐 http://77.222.42.53"
+echo "   🌐 http://77.222.42.53:8080"
 echo ""
 echo "🔧 Полезные команды:"
 echo "   Логи: cd $PROJECT_DIR && docker-compose logs -f"
