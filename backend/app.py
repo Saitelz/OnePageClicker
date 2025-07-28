@@ -7,7 +7,13 @@ import uuid
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # Конфигурация для загрузки файлов
 ALLOWED_EXTENSIONS = {'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'pdf'}

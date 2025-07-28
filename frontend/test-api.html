@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест API документов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест API документов</h1>
+    
+    <div class="test-section">
+        <h3>1. Проверка доступности API</h3>
+        <button onclick="testApiHealth()">Проверить API</button>
+        <div id="api-health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Получение списка документов</h3>
+        <button onclick="testGetDocuments()">Получить документы</button>
+        <div id="documents-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Загрузка тестового файла</h3>
+        <input type="file" id="fileInput" accept=".doc,.docx,.pdf,.ppt,.pptx,.xls,.xlsx">
+        <button onclick="testUpload()">Загрузить файл</button>
+        <div id="upload-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Тест просмотра документа</h3>
+        <input type="text" id="documentId" placeholder="ID документа" style="padding: 8px; margin: 5px;">
+        <button onclick="testViewDocument()">Получить URL просмотра</button>
+        <div id="view-result" class="result"></div>
+    </div>
+
+    <script>
+        async function testApiHealth() {
+            const resultDiv = document.getElementById('api-health-result');
+            try {
+                const response = await fetch('/api/counter');
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ API доступен\nОтвет: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ API недоступен\nОшибка: ${error.message}`;
+            }
+        }
+
+        async function testGetDocuments() {
+            const resultDiv = document.getElementById('documents-result');
+            try {
+                const response = await fetch('/api/documents');
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Список документов получен\nКоличество: ${data.documents.length}\nДанные: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка получения документов\nОшибка: ${error.message}`;
+            }
+        }
+
+        async function testUpload() {
+            const resultDiv = document.getElementById('upload-result');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ Выберите файл для загрузки';
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch('/api/documents/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Файл загружен\nID: ${data.document.id}\nДанные: ${JSON.stringify(data, null, 2)}`;
+                    document.getElementById('documentId').value = data.document.id;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка загрузки\nОшибка: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка загрузки\nОшибка: ${error.message}`;
+            }
+        }
+
+        async function testViewDocument() {
+            const resultDiv = document.getElementById('view-result');
+            const documentId = document.getElementById('documentId').value;
+            
+            if (!documentId) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ Введите ID документа';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/documents/${documentId}/view`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ URL для просмотра получен<br>
+                        URL: <a href="${data.view_url}" target="_blank">${data.view_url}</a><br>
+                        Данные: ${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Ошибка получения URL\nОшибка: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Ошибка получения URL\nОшибка: ${error.message}`;
+            }
+        }
+
+        // Автоматически проверяем API при загрузке страницы
+        window.onload = function() {
+            testApiHealth();
+            testGetDocuments();
+        };
+    </script>
+</body>
+</html>

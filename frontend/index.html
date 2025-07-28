@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -173,7 +174,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .document-info {
@@ -238,7 +239,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.8);
+            background-color: rgba(0, 0, 0, 0.8);
         }
 
         .modal.show {
@@ -255,7 +256,7 @@
             max-width: 1200px;
             max-height: 800px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
@@ -286,7 +287,7 @@
         }
 
         .close-button:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .modal-body {
@@ -316,36 +317,27 @@
         }
     </style>
 </head>
+
 <body>
     <div id="app" class="container">
         <h1>Кликер</h1>
-        
+
         <div class="counter-display">
             {{ count }}
         </div>
-        
+
         <div>
-            <button 
-                class="click-button" 
-                @click="incrementCounter"
-                :disabled="loading"
-                :class="{ loading: loading }"
-            >
+            <button class="click-button" @click="incrementCounter" :disabled="loading" :class="{ loading: loading }">
                 {{ loading ? '⏳ Загрузка...' : '🚀 КЛИК!' }}
             </button>
         </div>
-        
+
         <div>
-            <button 
-                class="reset-button" 
-                @click="resetCounter"
-                :disabled="loading"
-                :class="{ loading: loading }"
-            >
+            <button class="reset-button" @click="resetCounter" :disabled="loading" :class="{ loading: loading }">
                 🔄 Сбросить
             </button>
         </div>
-        
+
         <div v-if="status" :class="['status', status.type]">
             {{ status.message }}
         </div>
@@ -353,36 +345,22 @@
         <!-- Секция документов -->
         <div class="documents-section">
             <h2>📄 Просмотр документов Office</h2>
-            
+
             <!-- Область загрузки -->
-            <div 
-                class="upload-area"
-                :class="{ dragover: isDragOver }"
-                @dragover.prevent="isDragOver = true"
-                @dragleave.prevent="isDragOver = false"
-                @drop.prevent="handleFileDrop"
-            >
+            <div class="upload-area" :class="{ dragover: isDragOver }" @dragover.prevent="isDragOver = true"
+                @dragleave.prevent="isDragOver = false" @drop.prevent="handleFileDrop">
                 <div>
                     <p>📁 Перетащите файл сюда или нажмите кнопку</p>
                     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
                         Поддерживаемые форматы: DOC, DOCX, PPT, PPTX, XLS, XLSX, PDF
                     </p>
-                    <input 
-                        type="file" 
-                        ref="fileInput"
-                        class="file-input"
-                        @change="handleFileSelect"
-                        accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx,.pdf"
-                    >
-                    <button 
-                        class="upload-button"
-                        @click="$refs.fileInput.click()"
-                        :disabled="uploading"
-                    >
+                    <input type="file" ref="fileInput" class="file-input" @change="handleFileSelect"
+                        accept=".doc,.docx,.ppt,.pptx,.xls,.xlsx,.pdf">
+                    <button class="upload-button" @click="$refs.fileInput.click()" :disabled="uploading">
                         {{ uploading ? '⏳ Загрузка...' : '📤 Выбрать файл' }}
                     </button>
                 </div>
-                
+
                 <div v-if="uploadProgress" class="upload-progress">
                     {{ uploadProgress }}
                 </div>
@@ -391,34 +369,30 @@
             <!-- Список документов -->
             <div class="documents-list">
                 <h3>📋 Загруженные документы</h3>
-                
+
+                <!-- Кнопка для тестирования модального окна -->
+                <button class="upload-button" @click="testModal"
+                    style="margin: 10px; font-size: 0.9em; padding: 10px 20px;">
+                    🧪 Тест модального окна
+                </button>
+
                 <div v-if="documents.length === 0" class="empty-state">
                     Документы не загружены
                 </div>
-                
-                <div 
-                    v-for="document in documents" 
-                    :key="document.id"
-                    class="document-item"
-                >
+
+                <div v-for="document in documents" :key="document.id" class="document-item">
                     <div class="document-info">
                         <div class="document-name">{{ document.original_name }}</div>
                         <div class="document-meta">
-                            Загружен: {{ formatDate(document.upload_date) }} | 
+                            Загружен: {{ formatDate(document.upload_date) }} |
                             Размер: {{ formatFileSize(document.size) }}
                         </div>
                     </div>
                     <div class="document-actions">
-                        <button 
-                            class="view-button"
-                            @click="viewDocument(document)"
-                        >
+                        <button class="view-button" @click="viewDocument(document)">
                             👁️ Просмотр
                         </button>
-                        <button 
-                            class="delete-button"
-                            @click="deleteDocument(document)"
-                        >
+                        <button class="delete-button" @click="deleteDocument(document)">
                             🗑️ Удалить
                         </button>
                     </div>
@@ -437,12 +411,7 @@
                 <button class="close-button" @click="closeModal">✕</button>
             </div>
             <div class="modal-body">
-                <iframe 
-                    v-if="documentViewUrl"
-                    :src="documentViewUrl"
-                    class="document-viewer"
-                    frameborder="0"
-                ></iframe>
+                <iframe v-if="documentViewUrl" :src="documentViewUrl" class="document-viewer" frameborder="0"></iframe>
                 <div v-else style="padding: 50px; text-align: center; color: #666;">
                     ⏳ Загрузка документа...
                 </div>
@@ -537,9 +506,12 @@
                 // Методы для работы с документами
                 async loadDocuments() {
                     try {
+                        console.log('Загружаем список документов...');
                         const response = await fetch('/api/documents');
                         const data = await response.json();
+                        console.log('Получен список документов:', data);
                         this.documents = data.documents;
+                        console.log('Документы в состоянии:', this.documents);
                     } catch (error) {
                         console.error('Ошибка загрузки документов:', error);
                         this.showStatus('❌ Ошибка загрузки документов', 'error');
@@ -567,7 +539,7 @@
                     // Проверка типа файла
                     const allowedTypes = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'pdf'];
                     const fileExtension = file.name.split('.').pop().toLowerCase();
-                    
+
                     if (!allowedTypes.includes(fileExtension)) {
                         this.showStatus('❌ Неподдерживаемый тип файла', 'error');
                         return;
@@ -610,17 +582,28 @@
                 },
 
                 async viewDocument(document) {
+                    console.log('viewDocument вызван с документом:', document);
+
                     try {
                         this.currentDocument = document;
                         this.showModal = true;
                         this.documentViewUrl = '';
 
-                        const response = await fetch(`/api/documents/${document.id}/view`);
+                        console.log('Модальное окно должно открыться, showModal:', this.showModal);
+
+                        const url = `/api/documents/${document.id}/view`;
+                        console.log('Запрос к API:', url);
+
+                        const response = await fetch(url);
                         const data = await response.json();
+
+                        console.log('Ответ API:', response.status, data);
 
                         if (response.ok) {
                             this.documentViewUrl = data.view_url;
+                            console.log('URL для просмотра:', data.view_url);
                         } else {
+                            console.error('Ошибка API:', data.error);
                             this.showStatus(`❌ ${data.error}`, 'error');
                             this.closeModal();
                         }
@@ -656,9 +639,18 @@
                 },
 
                 closeModal() {
+                    console.log('Закрываем модальное окно');
                     this.showModal = false;
                     this.currentDocument = null;
                     this.documentViewUrl = '';
+                },
+
+                testModal() {
+                    console.log('Тестируем модальное окно');
+                    this.currentDocument = { original_name: 'Тестовый документ' };
+                    this.showModal = true;
+                    this.documentViewUrl = 'https://docs.google.com/gview?url=https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf&embedded=true';
+                    console.log('showModal установлен в:', this.showModal);
                 },
 
                 formatDate(dateString) {
@@ -677,4 +669,5 @@
         }).mount('#app');
     </script>
 </body>
-</html> 
+
+</html>
